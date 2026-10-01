@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tabber</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="logo">𝄞</span> Tabber</div>
+    <nav class="toolbar">
+      <div class="group">
+        <button id="btnNew" title="Start a new tab">New</button>
+        <button id="btnOpen" title="Open a .txt tab or a saved .json project">Open</button>
+        <button id="btnSave" title="Save project as .json">Save</button>
+        <input type="file" id="fileInput" accept=".txt,.tab,.json,text/plain,application/json" hidden>
+      </div>
+      <div class="group">
+        <button id="btnUndo" title="Undo (Ctrl/⌘ Z)" aria-label="Undo">↶</button>
+        <button id="btnRedo" title="Redo (Ctrl/⌘ Shift Z)" aria-label="Redo">↷</button>
+      </div>
+      <div class="group">
+        <button id="btnInsert" title="Insert column (Ctrl/⌘ I)">+ Col</button>
+        <button id="btnDelete" title="Delete column (Ctrl/⌘ Backspace)">− Col</button>
+        <button id="btnBar" title="Toggle bar line (|)">| Bar</button>
+        <button id="btnStaff" title="Add staff below (Ctrl/⌘ Enter)">+ Staff</button>
+      </div>
+      <div class="group">
+        <label class="field" title="Move right automatically after each note">Advance
+          <select id="selAdvance">
+            <option value="0">Off</option>
+            <option value="1">1 col</option>
+            <option value="2">2 cols</option>
+            <option value="3">3 cols</option>
+            <option value="4">4 cols</option>
+          </select>
+        </label>
+        <label class="field">Tuning <select id="selTuning"></select></label>
+      </div>
+      <div class="group">
+        <select id="selPage" title="PDF page size">
+          <option value="letter">Letter</option>
+          <option value="a4">A4</option>
+        </select>
+        <button id="btnTxt">Export TXT</button>
+        <button id="btnPdf" class="primary">Export PDF</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="col-main">
+      <article class="paper">
+        <input id="title" class="meta title" placeholder="Untitled" autocomplete="off">
+        <input id="artist" class="meta artist" placeholder="Artist" autocomplete="off">
+        <input id="info" class="meta info" placeholder="Capo, tempo, notes…" autocomplete="off">
+        <div id="sheet"></div>
+        <button id="btnAddStaffBottom" class="add-staff">+ Add staff</button>
+      </article>
+
+      <details class="preview" id="previewBox">
+        <summary>Plain-text preview</summary>
+        <pre id="preview"></pre>
+      </details>
+    </section>
+
+    <aside class="help">
+      <h2>Keys</h2>
+      <dl>
+        <dt><kbd>Click</kbd></dt><dd>Place the cursor on a string</dd>
+        <dt><kbd>0</kbd>–<kbd>9</kbd></dt><dd>Fret number (type two digits for 10+)</dd>
+        <dt><kbd>h</kbd> <kbd>p</kbd> <kbd>b</kbd> <kbd>r</kbd> <kbd>/</kbd> <kbd>\</kbd> <kbd>~</kbd> <kbd>x</kbd></dt><dd>Hammer, pull, bend, release, slides, vibrato, mute</dd>
+        <dt><kbd>Space</kbd> <kbd>Tab</kbd></dt><dd>Next column</dd>
+        <dt><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd></dt><dd>Move. Hold <kbd>Shift</kbd> (or drag) to select</dd>
+        <dt><kbd>|</kbd></dt><dd>Toggle bar line</dd>
+        <dt><kbd>⌫</kbd> <kbd>Del</kbd></dt><dd>Clear</dd>
+        <dt><kbd>⌘/Ctrl</kbd> <kbd>I</kbd></dt><dd>Insert column</dd>
+        <dt><kbd>⌘/Ctrl</kbd> <kbd>⌫</kbd></dt><dd>Delete column(s)</dd>
+        <dt><kbd>⌘/Ctrl</kbd> <kbd>↵</kbd></dt><dd>New staff</dd>
+        <dt><kbd>⌘/Ctrl</kbd> <kbd>C</kbd> <kbd>X</kbd> <kbd>V</kbd></dt><dd>Copy, cut, paste</dd>
+        <dt><kbd>⌘/Ctrl</kbd> <kbd>Z</kbd></dt><dd>Undo (add <kbd>Shift</kbd> to redo)</dd>
+      </dl>
+      <p class="tip"><strong>Advance</strong> moves right after every note, so a riff is just a string of numbers. Type two digits quickly (<kbd>1</kbd><kbd>2</kbd>) for frets 10–24. A technique letter attaches to the previous note, so typing <kbd>5</kbd><kbd>h</kbd><kbd>7</kbd> gives <code>5h7</code>.</p>
+      <p class="tip">Click a string name to rename it.</p>
+      <label class="field small">Columns per new staff
+        <input id="inpCols" type="number" min="4" max="128" step="1">
+      </label>
+      <p class="saved" id="saved">Autosaved in this browser</p>
+    </aside>
+  </main>
+
+  <textarea id="keysink" aria-label="Tab editor input" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
+
+  <script src="pdf.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
