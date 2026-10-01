@@ -386,7 +386,9 @@ kbd {
 
 @media (max-width: 640px) {
   .topbar { padding: 8px 16px; }
+  .group { flex-wrap: wrap; max-width: 100%; }
   .group:last-child { margin-left: 0; }
+  .toolbar select { max-width: 100%; }
   .layout { padding: 16px 16px 48px; }
   .paper { padding: 24px 16px; }
   .title { font-size: 24px; }
