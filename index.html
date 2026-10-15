@@ -43,6 +43,7 @@
           <option value="letter">Letter</option>
           <option value="a4">A4</option>
         </select>
+        <button id="btnShare" title="Copy a link that contains this whole tab">Share link</button>
         <button id="btnTxt">Export TXT</button>
         <button id="btnPdf" class="primary">Export PDF</button>
       </div>
@@ -51,6 +52,11 @@
 
   <main class="layout">
     <section class="col-main">
+      <div class="notice" id="notice" role="status" hidden>
+        <span>You opened a shared tab, so it replaced the one you were working on.</span>
+        <button id="noticeRestore">Restore my tab</button>
+        <button id="noticeClose" class="icon" aria-label="Dismiss">×</button>
+      </div>
       <article class="paper">
         <input id="title" class="meta title" placeholder="Untitled" autocomplete="off">
         <input id="artist" class="meta artist" placeholder="Artist" autocomplete="off">
@@ -83,6 +89,7 @@
       </dl>
       <p class="tip"><strong>Advance</strong> moves right after every note, so a riff is just a string of numbers. Type two digits quickly (<kbd>1</kbd><kbd>2</kbd>) for frets 10–24. A technique letter attaches to the previous note, so typing <kbd>5</kbd><kbd>h</kbd><kbd>7</kbd> gives <code>5h7</code>.</p>
       <p class="tip">Click a string name to rename it.</p>
+      <p class="tip"><strong>Share link</strong> copies a URL that contains the whole tab, so anyone who opens it sees exactly what you wrote. The address bar updates as you edit, and the tab never leaves your browser until you send the link.</p>
       <label class="field small">Columns per new staff
         <input id="inpCols" type="number" min="4" max="128" step="1">
       </label>
@@ -92,7 +99,10 @@
 
   <textarea id="keysink" aria-label="Tab editor input" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
 
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
   <script src="pdf.js"></script>
+  <script src="share.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

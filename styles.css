@@ -395,7 +395,46 @@ kbd {
 }
 
 @media print {
-  .topbar, .help, .preview, .add-staff, .staff-actions, #keysink { display: none !important; }
+  .topbar, .help, .preview, .add-staff, .staff-actions, .notice, .toast, #keysink { display: none !important; }
   .layout { display: block; padding: 0; }
   .paper { box-shadow: none; }
 }
+
+/* ---------- Share notice + toast ---------- */
+
+.notice {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-bottom: 16px;
+  padding: 10px 12px 10px 16px;
+  background: var(--paper);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  font-size: 13px;
+}
+.notice[hidden] { display: none; }
+.notice span { flex: 1; min-width: 200px; }
+.notice button { height: 28px; }
+.notice .icon { width: 28px; padding: 0; font-size: 16px; line-height: 1; }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 50;
+  max-width: calc(100% - 32px);
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 13px;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transform: translate(-50%, 8px);
+  transition: opacity .2s, transform .2s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }

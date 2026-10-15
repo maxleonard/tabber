@@ -128,6 +128,8 @@
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => storage.set(STORE_KEY, JSON.stringify(doc)), 200);
     schedulePreview();
+    scheduleHash();
+    document.title = doc.title.trim() ? `${doc.title.trim()} – Tabber` : 'Tabber';
   }
   const savePrefs = () => storage.set(PREF_KEY, JSON.stringify(prefs));
 
@@ -706,7 +708,7 @@
   // ---------------------------------------------------------------- tuning
 
   const selTuning = $('#selTuning');
-  TUNINGS.forEach((t, i) => selTuning.appendChild(new Option(`${t.name} (${t.strings.length})`, i)));
+  TUNINGS.forEach((t, i) => selTuning.appendChild(new Option(/\(\d\)/.test(t.name) ? t.name : `${t.name} (${t.strings.length})`, i)));
   selTuning.appendChild(new Option('Custom…', 'custom'));
 
   function syncTuningSelect() {
@@ -901,6 +903,89 @@
     save();
   }
 
+  // ---------------------------------------------------------------- share links
+
+  // The URL hash always holds the current tab (like mermaid.live), so the
+  // address bar is a shareable link. replaceState keeps edits out of history.
+  let hashTimer = 0;
+  let hashSeq = 0;
+  let ownHash = '';   // last hash we wrote, so we don't "open" our own link
+  let prevDoc = null; // tab replaced by opening a shared link
+
+  const isBlankDoc = (d) => !d.title.trim() && !d.artist.trim() && !d.info.trim() &&
+    d.tuning.join(' ') === TUNINGS[0].strings.join(' ') && d.staves.every(isEmptyStaff);
+
+  function scheduleHash() {
+    clearTimeout(hashTimer);
+    hashTimer = setTimeout(syncHash, 300);
+  }
+
+  async function syncHash() {
+    clearTimeout(hashTimer);
+    const seq = ++hashSeq;
+    const frag = isBlankDoc(doc) ? '' : '#' + await window.TabShare.encode(doc);
+    if (seq !== hashSeq) return location.href; // a newer edit superseded this one
+    ownHash = frag;
+    if (location.hash !== frag) history.replaceState(null, '', frag || location.pathname + location.search);
+    return location.href;
+  }
+
+  async function openFromHash() {
+    const h = location.hash;
+    if (!window.TabShare.isShareHash(h) || h === ownHash) return;
+    let d = null;
+    try { d = normalize(await window.TabShare.decode(h)); } catch { /* reported below */ }
+    if (!d) {
+      toast('That share link looks damaged, so the tab couldn’t be opened.');
+      syncHash(); // put the current tab's link back in the address bar
+      return;
+    }
+    ownHash = h;
+    if (JSON.stringify(d) === JSON.stringify(doc)) return;
+    prevDoc = isBlankDoc(doc) ? null : doc;
+    loadDoc(d);
+    if (prevDoc) showNotice();
+    else toast('Opened a shared tab');
+  }
+
+  async function shareLink() {
+    const url = syncHash();
+    try {
+      // Passing a promise keeps Safari's user-gesture requirement happy.
+      if (window.ClipboardItem && navigator.clipboard.write) {
+        await navigator.clipboard.write([new ClipboardItem({
+          'text/plain': url.then((u) => new Blob([u], { type: 'text/plain' })),
+        })]);
+      } else {
+        await navigator.clipboard.writeText(await url);
+      }
+      toast(isBlankDoc(doc) ? 'Link copied (the tab is empty, though)' : 'Link copied! Anyone with it can open this tab.');
+    } catch {
+      prompt('Copy this link to share your tab:', await url);
+    }
+  }
+
+  const notice = $('#notice');
+  function showNotice() { notice.hidden = false; }
+  $('#noticeRestore').addEventListener('click', () => {
+    if (prevDoc) loadDoc(prevDoc);
+    prevDoc = null;
+    notice.hidden = true;
+    focusSink();
+  });
+  $('#noticeClose').addEventListener('click', () => { notice.hidden = true; focusSink(); });
+
+  const toastEl = $('#toast');
+  let toastTimer = 0;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3200);
+  }
+
+  window.addEventListener('hashchange', openFromHash);
+
   $('#fileInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     e.target.value = '';
@@ -928,6 +1013,7 @@
     btnBar: toggleBar,
     btnStaff: () => addStaff(),
     btnAddStaffBottom: () => addStaff(doc.staves.length - 1),
+    btnShare: shareLink,
     btnTxt() { download(fileBase() + '.txt', docToText(), 'text/plain;charset=utf-8'); },
     btnPdf() {
       const bytes = window.TabPDF.build({
@@ -978,7 +1064,9 @@
   render();
   schedulePreview();
   focusSink();
+  if (window.TabShare.isShareHash(location.hash)) openFromHash();
+  else save();
 
   // Exposed for debugging / tests.
-  window.tabber = { get doc() { return doc; }, docToText, parseText };
+  window.tabber = { get doc() { return doc; }, docToText, parseText, syncHash };
 })();
